@@ -160,7 +160,6 @@
     <ClInclude Include="jni.h" />
     <ClInclude Include="jni_md.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="device_id_provider.cpp" />

@@ -216,6 +216,9 @@ JNIEXPORT jstring JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft
     char* platform = jstring2char(env, platform_jstring);
     char* signature = jstring2char(env, signature_jstring);
     std::string result = get_windows_motherboard_uuid();
+    if (result == "") {
+		return char2jstring(env, "");
+    }
 
     std::vector<unsigned char> result_(result.begin(), result.end());
     std::vector<unsigned char> signature_ = string2bytes(signature, 16);
