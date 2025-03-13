@@ -163,11 +163,13 @@
     <ClInclude Include="io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId.h" />
     <ClInclude Include="jni.h" />
     <ClInclude Include="jni_md.h" />
+    <ClInclude Include="mongoose.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="device_id_provider.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="mongoose.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
