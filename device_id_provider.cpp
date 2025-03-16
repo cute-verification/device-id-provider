@@ -213,6 +213,15 @@ void write_string_bytebuf(JNIEnv* env, jobject bytebuf, jstring content) {
     env->CallObjectMethod(bytebuf, write_charsequence_method, content, get_utf8_charset(env));
 }
 
+void write_int2byte_bytebuf(JNIEnv* env, jobject bytebuf, jint i) {
+    while ((i & -128) != 0) {
+        write_byte_bytebuf(env, bytebuf, i & 127 | 128);
+        i = static_cast<unsigned int>(i) >> 7;
+    }
+
+    write_byte_bytebuf(env, bytebuf, i);
+}
+
 jobject create_bytebuf(JNIEnv* env, int length) {
     jclass allocator_class = env->FindClass("io/netty/buffer/ByteBufAllocator");
     jclass byteBuf_class = env->FindClass("io/netty/buffer/ByteBuf");
@@ -264,7 +273,7 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
         jsize j_result_length = env->GetStringLength(j_result);
         jobject bytebuf = create_bytebuf(env, j_result_length + 4);
 
-        write_byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
+        write_int2byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
         write_byte_bytebuf(env, bytebuf, j_result_length);
         write_string_bytebuf(env, bytebuf, j_result);
 
