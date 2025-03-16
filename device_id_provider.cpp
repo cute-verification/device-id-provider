@@ -201,10 +201,16 @@ jobject get_utf8_charset(JNIEnv* env) {
     return utf8_charset;
 }
 
-void write_byte_bytebuf(JNIEnv* env, jobject bytebuf, jint content) {
+void write_byte_bytebuf(JNIEnv* env, jobject bytebuf, jbyte content) {
     jclass bytebuf_class = env->GetObjectClass(bytebuf);
     jmethodID write_byte_method = env->GetMethodID(bytebuf_class, "writeByte", "(I)Lio/netty/buffer/ByteBuf;");
     env->CallObjectMethod(bytebuf, write_byte_method, content);
+}
+
+void write_int_bytebuf(JNIEnv* env, jobject bytebuf, jint content) {
+    jclass bytebuf_class = env->GetObjectClass(bytebuf);
+    jmethodID write_int_method = env->GetMethodID(bytebuf_class, "writeInt", "(I)Lio/netty/buffer/ByteBuf;");
+    env->CallObjectMethod(bytebuf, write_int_method, content);
 }
 
 void write_string_bytebuf(JNIEnv* env, jobject bytebuf, jstring content) {
@@ -271,10 +277,10 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
 
     if (strcmp(version, "1.14.4")) {
         jsize j_result_length = env->GetStringLength(j_result);
-        jobject bytebuf = create_bytebuf(env, j_result_length + 4);
+        jobject bytebuf = create_bytebuf(env, 4 + 4);
 
         write_int2byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
-        write_byte_bytebuf(env, bytebuf, j_result_length);
+        write_int_bytebuf(env, bytebuf, j_result_length);
         write_string_bytebuf(env, bytebuf, j_result);
 
         env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
