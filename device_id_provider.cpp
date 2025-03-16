@@ -8,6 +8,8 @@
 #include "openssl/ssl.h"
 #include <vector>
 
+const int CUSTOM_PACKET_ID = 561789;
+
 std::vector<BYTE> get_smbios_data() {
     DWORD bufferSize = 0;
     bufferSize = GetSystemFirmwareTable('RSMB', 0, NULL, 0);
@@ -61,23 +63,6 @@ std::string get_windows_motherboard_uuid() {
 
     return "";
 }
-
-//std::string get_linux_motherboard_uuid() {
-//    std::ifstream uuid_file("/sys/class/dmi/id/product_uuid");
-//    if (!uuid_file.is_open()) {
-//        return "";
-//    }
-//
-//    std::string uuid;
-//    std::getline(uuid_file, uuid);
-//    uuid_file.close();
-//
-//    if (!uuid.empty() && uuid.back() == '\n') {
-//        uuid.pop_back();
-//    }
-//
-//    return uuid;
-//}
 
 char* jstring2char(JNIEnv* env, jstring jstr) {
     int length = (env)->GetStringLength(jstr);
@@ -208,23 +193,81 @@ std::vector<unsigned char> aes_decrypt(
     return decrypted_content;
 }
 
-JNIEXPORT jstring JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_get(
+jobject get_utf8_charset(JNIEnv* env) {
+    jclass standard_charsets_class = env->FindClass("java/nio/charset/StandardCharsets");
+    jfieldID utf8_charset_field = env->GetStaticFieldID(standard_charsets_class, "UTF-8", "Ljava/nio/charset/Charset;");
+    jobject utf8_charset = env->GetStaticObjectField(standard_charsets_class, utf8_charset_field);
+
+    return utf8_charset;
+}
+
+void write_byte_bytebuf(JNIEnv* env, jobject bytebuf, jint content) {
+    jclass bytebuf_class = env->GetObjectClass(bytebuf);
+    jmethodID write_byte_method = env->GetMethodID(bytebuf_class, "writeByte", "(I)Lio/netty/buffer/ByteBuf;");
+    env->CallObjectMethod(bytebuf, write_byte_method, content);
+}
+
+void write_string_bytebuf(JNIEnv* env, jobject bytebuf, jstring content) {
+    jclass bytebuf_class = env->GetObjectClass(bytebuf);
+    jmethodID write_charsequence_method = env->GetMethodID(bytebuf_class, "writeCharSequence", "(Ljava/lang/CharSequence;Ljava/nio/charset/Charset;)I");
+    env->CallObjectMethod(bytebuf, write_charsequence_method, content, get_utf8_charset(env));
+}
+
+jobject create_bytebuf(JNIEnv* env, int length) {
+    jclass allocator_class = env->FindClass("io/netty/buffer/ByteBufAllocator");
+    jclass byteBuf_class = env->FindClass("io/netty/buffer/ByteBuf");
+
+    jmethodID default_allocator_method = env->GetStaticMethodID(allocator_class, "DEFAULT", "()Lio/netty/buffer/ByteBufAllocator;");
+    jobject default_allocator = env->CallStaticObjectMethod(allocator_class, default_allocator_method);
+    jmethodID buffer_create_method = env->GetMethodID(allocator_class, "buffer", "(I)Lio/netty/buffer/ByteBuf;");
+
+    
+    return env->CallObjectMethod(default_allocator, buffer_create_method, length);
+}
+
+JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
     JNIEnv* env,
     jclass,
     jstring platform_jstring,
-    jstring signature_jstring) {
+    jstring signature_jstring,
+    jstring version_jstring,
+    jobject channel) {
     char* platform = jstring2char(env, platform_jstring);
     char* signature = jstring2char(env, signature_jstring);
-    std::string result = get_windows_motherboard_uuid();
-    if (result == "") {
-		return char2jstring(env, "");
+    char* version = jstring2char(env, version_jstring);
+
+    std::string motherboard_uuid = get_windows_motherboard_uuid();
+    if (motherboard_uuid == "") {
+		return;
     }
 
-    std::vector<unsigned char> result_(result.begin(), result.end());
+    std::vector<unsigned char> result_(motherboard_uuid.begin(), motherboard_uuid.end());
     std::vector<unsigned char> signature_ = string2bytes(signature, 16);
     std::vector<unsigned char> encrypted_result = aes_encrypt(result_, signature_, signature_);
 
-    char* final_result = reinterpret_cast<char*>(encrypted_result.data());
+    char* result = reinterpret_cast<char*>(encrypted_result.data());
 
-    return char2jstring(env, final_result);
+    jclass channel_class = env->GetObjectClass(channel);
+    if (channel_class == nullptr) {
+        return;
+    }
+
+    jmethodID write_and_flush_method = env->GetMethodID(channel_class, "writeAndFlush", "(Ljava/lang/Object;)Lio/netty/channel/ChannelFuture;");
+    if (write_and_flush_method == nullptr) {
+        return;
+    }
+
+    jstring j_result = char2jstring(env, result);
+    jsize j_result_length = env->GetStringLength(j_result);
+    jobject bytebuf = create_bytebuf(env, j_result_length);
+
+    if (strcmp(version, "1.14.4")) {
+        write_byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
+        write_string_bytebuf(env, bytebuf, j_result);
+    }
+
+    env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
+
+    return;
 }
+

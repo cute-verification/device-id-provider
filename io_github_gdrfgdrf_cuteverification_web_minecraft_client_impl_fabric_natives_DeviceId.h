@@ -9,11 +9,11 @@ extern "C" {
 #endif
 	/*
 	 * Class:     io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId
-	 * Method:    get
-	 * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	 * Method:    send
+	 * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/netty/channel/Channel;)V
 	 */
-	JNIEXPORT jstring JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_get
-	(JNIEnv*, jclass, jstring, jstring);
+	JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send
+	(JNIEnv*, jclass, jstring, jstring, jstring, jobject);
 
 #ifdef __cplusplus
 }
