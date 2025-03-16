@@ -265,6 +265,7 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
         jobject bytebuf = create_bytebuf(env, j_result_length + 4);
 
         write_byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
+        write_byte_bytebuf(env, bytebuf, j_result_length);
         write_string_bytebuf(env, bytebuf, j_result);
 
         env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
