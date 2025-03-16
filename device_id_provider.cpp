@@ -8,7 +8,7 @@
 #include "openssl/ssl.h"
 #include <vector>
 
-const int CUSTOM_PACKET_ID = 561789;
+const int CUSTOM_PACKET_ID = 56178;
 
 std::vector<BYTE> get_smbios_data() {
     DWORD bufferSize = 0;
@@ -258,15 +258,17 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
     }
 
     jstring j_result = char2jstring(env, result);
-    jsize j_result_length = env->GetStringLength(j_result);
-    jobject bytebuf = create_bytebuf(env, j_result_length);
+    
 
     if (strcmp(version, "1.14.4")) {
+        jsize j_result_length = env->GetStringLength(j_result);
+        jobject bytebuf = create_bytebuf(env, j_result_length + 4);
+
         write_byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
         write_string_bytebuf(env, bytebuf, j_result);
-    }
 
-    env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
+        env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
+    }
 
     return;
 }
