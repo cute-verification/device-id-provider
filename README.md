@@ -1,1 +1,1 @@
-Use OpenSSL to encrypt or decrypt device id
+Use OpenSSL to encrypt device id and send it to server
