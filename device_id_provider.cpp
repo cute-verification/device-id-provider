@@ -240,6 +240,25 @@ jobject create_bytebuf(JNIEnv* env) {
     return env->CallObjectMethod(default_allocator, buffer_create_method);
 }
 
+char* make_final_string(std::string motherboard_uuid, std::string platform, std::string signature) {
+    std::vector<unsigned char> signature_vector(signature.begin(), signature.end());
+
+    std::vector<unsigned char> motherboard_uuid_vector(motherboard_uuid.begin(), motherboard_uuid.end());
+    std::vector<unsigned char> encrypted_motherboard_uuid_vector = aes_encrypt(motherboard_uuid_vector, signature_vector, signature_vector);
+
+    std::vector<unsigned char> platform_vector(platform.begin(), platform.end());
+    std::vector<unsigned char> encrypted_platform_vector = aes_encrypt(platform_vector, signature_vector, signature_vector);
+
+    char* encrypted_motherboard_uuid = reinterpret_cast<char*>(encrypted_motherboard_uuid_vector.data());
+    char* encrypted_platform = reinterpret_cast<char*>(encrypted_platform_vector.data());
+
+    int result_size = _msize(encrypted_motherboard_uuid) + _msize(encrypted_platform);
+    char* result = new char[result_size];
+    sprintf(result, "%s,%s", encrypted_motherboard_uuid, encrypted_platform);
+
+    return result;
+}
+
 JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
     JNIEnv* env,
     jclass,
@@ -252,15 +271,7 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
     char* version = jstring2char(env, version_jstring);
 
     std::string motherboard_uuid = get_windows_motherboard_uuid();
-    if (motherboard_uuid == "") {
-		return;
-    }
-
-    std::vector<unsigned char> result_(motherboard_uuid.begin(), motherboard_uuid.end());
-    std::vector<unsigned char> signature_ = string2bytes(signature, 16);
-    std::vector<unsigned char> encrypted_result = aes_encrypt(result_, signature_, signature_);
-
-    char* result = reinterpret_cast<char*>(encrypted_result.data());
+    char* result = make_final_string(motherboard_uuid, platform, signature);
 
     jclass channel_class = env->GetObjectClass(channel);
     if (channel_class == nullptr) {
