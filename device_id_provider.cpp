@@ -228,16 +228,16 @@ void write_int2byte_bytebuf(JNIEnv* env, jobject bytebuf, jint i) {
     write_byte_bytebuf(env, bytebuf, i);
 }
 
-jobject create_bytebuf(JNIEnv* env, int length) {
+jobject create_bytebuf(JNIEnv* env) {
     jclass allocator_class = env->FindClass("io/netty/buffer/ByteBufAllocator");
     jclass byteBuf_class = env->FindClass("io/netty/buffer/ByteBuf");
 
     jmethodID default_allocator_method = env->GetStaticMethodID(allocator_class, "DEFAULT", "()Lio/netty/buffer/ByteBufAllocator;");
     jobject default_allocator = env->CallStaticObjectMethod(allocator_class, default_allocator_method);
-    jmethodID buffer_create_method = env->GetMethodID(allocator_class, "buffer", "(I)Lio/netty/buffer/ByteBuf;");
+    jmethodID buffer_create_method = env->GetMethodID(allocator_class, "buffer", "()Lio/netty/buffer/ByteBuf;");
 
     
-    return env->CallObjectMethod(default_allocator, buffer_create_method, length);
+    return env->CallObjectMethod(default_allocator, buffer_create_method);
 }
 
 JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
@@ -277,7 +277,7 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
 
     if (strcmp(version, "1.14.4")) {
         jsize j_result_length = env->GetStringLength(j_result);
-        jobject bytebuf = create_bytebuf(env, 4 + 4);
+        jobject bytebuf = create_bytebuf(env);
 
         write_int2byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
         write_int_bytebuf(env, bytebuf, j_result_length);
