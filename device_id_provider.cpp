@@ -193,7 +193,7 @@ std::vector<unsigned char> aes_decrypt(
 
 jobject get_utf8_charset(JNIEnv* env) {
     jclass standard_charsets_class = env->FindClass("java/nio/charset/StandardCharsets");
-    jfieldID utf8_charset_field = env->GetStaticFieldID(standard_charsets_class, "UTF-8", "Ljava/nio/charset/Charset;");
+    jfieldID utf8_charset_field = env->GetStaticFieldID(standard_charsets_class, "UTF_8", "Ljava/nio/charset/Charset;");
     jobject utf8_charset = env->GetStaticObjectField(standard_charsets_class, utf8_charset_field);
 
     return utf8_charset;
@@ -270,12 +270,12 @@ JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
     std::string motherboard_uuid = get_windows_motherboard_uuid();
     char* result = make_final_string(motherboard_uuid, platform, signature);
 
-    jclass channel_class = env->GetObjectClass(channel);
-    if (channel_class == nullptr) {
+    jclass channel_outbound_invoker_class = env->FindClass("io/netty/channel/ChannelOutboundInvoker");
+    if (channel_outbound_invoker_class == nullptr) {
         return -1;
     }
 
-    jmethodID write_and_flush_method = env->GetMethodID(channel_class, "writeAndFlush", "(Ljava/lang/Object;)Lio/netty/channel/ChannelFuture;");
+    jmethodID write_and_flush_method = env->GetMethodID(channel_outbound_invoker_class, "writeAndFlush", "(Ljava/lang/Object;)Lio/netty/channel/ChannelFuture;");
     if (write_and_flush_method == nullptr) {
         return -2;
     }
