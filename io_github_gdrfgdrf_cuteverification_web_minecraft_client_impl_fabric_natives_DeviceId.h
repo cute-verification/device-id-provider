@@ -12,7 +12,7 @@ extern "C" {
 	 * Method:    send
 	 * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lio/netty/channel/Channel;)V
 	 */
-	JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send
+	JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send
 	(JNIEnv*, jclass, jstring, jstring, jstring, jobject);
 
 #ifdef __cplusplus

@@ -259,7 +259,7 @@ char* make_final_string(std::string motherboard_uuid, std::string platform, std:
     return result;
 }
 
-JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
+JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
     JNIEnv* env,
     jclass,
     jstring platform_jstring,
@@ -275,18 +275,17 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
 
     jclass channel_class = env->GetObjectClass(channel);
     if (channel_class == nullptr) {
-        return;
+        return -1;
     }
 
     jmethodID write_and_flush_method = env->GetMethodID(channel_class, "writeAndFlush", "(Ljava/lang/Object;)Lio/netty/channel/ChannelFuture;");
     if (write_and_flush_method == nullptr) {
-        return;
+        return -2;
     }
 
     jstring j_result = char2jstring(env, result);
     
-
-    if (strcmp(version, "1.14.4")) {
+    if (strcmp(version, "1.14.4") == 0) {
         jsize j_result_length = env->GetStringLength(j_result);
         jobject bytebuf = create_bytebuf(env);
 
@@ -295,8 +294,10 @@ JNIEXPORT void JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
         write_string_bytebuf(env, bytebuf, j_result);
 
         env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
+
+        return 0;
     }
 
-    return;
+    return -3;
 }
 
