@@ -8,8 +8,6 @@
 #include "openssl/ssl.h"
 #include <vector>
 
-const int CUSTOM_PACKET_ID = 56178;
-
 std::vector<BYTE> get_smbios_data() {
     DWORD bufferSize = 0;
     bufferSize = GetSystemFirmwareTable('RSMB', 0, NULL, 0);
@@ -230,9 +228,8 @@ void write_int2byte_bytebuf(JNIEnv* env, jobject bytebuf, jint i) {
 
 jobject create_bytebuf(JNIEnv* env) {
     jclass allocator_class = env->FindClass("io/netty/buffer/ByteBufAllocator");
-    jclass byteBuf_class = env->FindClass("io/netty/buffer/ByteBuf");
 
-    jfieldID default_allocator_field = env->GetStaticFieldID(allocator_class, "DEFAULT", "()Lio/netty/buffer/ByteBufAllocator;");
+    jfieldID default_allocator_field = env->GetStaticFieldID(allocator_class, "DEFAULT", "Lio/netty/buffer/ByteBufAllocator;");
     jobject default_allocator = env->GetStaticObjectField(allocator_class, default_allocator_field);
     jmethodID buffer_create_method = env->GetMethodID(allocator_class, "buffer", "()Lio/netty/buffer/ByteBuf;");
 
@@ -289,7 +286,7 @@ JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
         jsize j_result_length = env->GetStringLength(j_result);
         jobject bytebuf = create_bytebuf(env);
 
-        write_int2byte_bytebuf(env, bytebuf, CUSTOM_PACKET_ID);
+        write_int2byte_bytebuf(env, bytebuf, 56178);
         write_int_bytebuf(env, bytebuf, j_result_length);
         write_string_bytebuf(env, bytebuf, j_result);
 
