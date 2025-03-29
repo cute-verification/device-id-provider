@@ -232,8 +232,8 @@ jobject create_bytebuf(JNIEnv* env) {
     jclass allocator_class = env->FindClass("io/netty/buffer/ByteBufAllocator");
     jclass byteBuf_class = env->FindClass("io/netty/buffer/ByteBuf");
 
-    jmethodID default_allocator_method = env->GetStaticMethodID(allocator_class, "DEFAULT", "()Lio/netty/buffer/ByteBufAllocator;");
-    jobject default_allocator = env->CallStaticObjectMethod(allocator_class, default_allocator_method);
+    jfieldID default_allocator_field = env->GetStaticFieldID(allocator_class, "DEFAULT", "()Lio/netty/buffer/ByteBufAllocator;");
+    jobject default_allocator = env->GetStaticObjectField(allocator_class, default_allocator_field);
     jmethodID buffer_create_method = env->GetMethodID(allocator_class, "buffer", "()Lio/netty/buffer/ByteBuf;");
 
     
