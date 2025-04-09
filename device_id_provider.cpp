@@ -205,6 +205,12 @@ void write_byte_bytebuf(JNIEnv* env, jobject bytebuf, jbyte content) {
     env->CallObjectMethod(bytebuf, write_byte_method, content);
 }
 
+void write_bytes_bytebuf(JNIEnv* env, jobject bytebuf, jbyteArray content) {
+    jclass bytebuf_class = env->GetObjectClass(bytebuf);
+    jmethodID write_bytes_method = env->GetMethodID(bytebuf_class, "writeBytes", "([B)Lio/netty/buffer/ByteBuf;");
+    env->CallObjectMethod(bytebuf, write_bytes_method, content);
+}
+
 void write_int_bytebuf(JNIEnv* env, jobject bytebuf, jint content) {
     jclass bytebuf_class = env->GetObjectClass(bytebuf);
     jmethodID write_int_method = env->GetMethodID(bytebuf_class, "writeInt", "(I)Lio/netty/buffer/ByteBuf;");
@@ -249,7 +255,7 @@ char* make_final_string(std::string motherboard_uuid, std::string platform, std:
     char* encrypted_motherboard_uuid = reinterpret_cast<char*>(encrypted_motherboard_uuid_vector.data());
     char* encrypted_platform = reinterpret_cast<char*>(encrypted_platform_vector.data());
 
-    int result_size = _msize(encrypted_motherboard_uuid) + _msize(encrypted_platform);
+    int result_size = strlen(encrypted_motherboard_uuid) + strlen(encrypted_platform);
     char* result = new char[result_size];
     sprintf(result, "%s,%s", encrypted_motherboard_uuid, encrypted_platform);
 
@@ -280,21 +286,25 @@ JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_cl
         return -2;
     }
 
-    jstring j_result = char2jstring(env, result);
-    
+    size_t length = strlen(result);
+    jbyteArray result_jbytearray = env->NewByteArray(length);
+    if (result_jbytearray == nullptr) {
+        return -3;
+    }
+
+    env->SetByteArrayRegion(result_jbytearray, 0, length, reinterpret_cast<const jbyte*>(result));
+
     if (strcmp(version, "1.14.4") == 0) {
-        jsize j_result_length = env->GetStringLength(j_result);
         jobject bytebuf = create_bytebuf(env);
 
         write_int2byte_bytebuf(env, bytebuf, 56178);
-        write_int_bytebuf(env, bytebuf, j_result_length);
-        write_string_bytebuf(env, bytebuf, j_result);
+        write_int_bytebuf(env, bytebuf, length);
+        write_bytes_bytebuf(env, bytebuf, result_jbytearray);
 
         env->CallObjectMethod(channel, write_and_flush_method, bytebuf);
 
         return 0;
     }
 
-    return -3;
+    return -4;
 }
-
