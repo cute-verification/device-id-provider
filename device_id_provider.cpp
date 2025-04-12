@@ -262,7 +262,7 @@ char* make_final_string(std::string motherboard_uuid, std::string platform, std:
     return result;
 }
 
-JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_impl_fabric_natives_DeviceId_send(
+JNIEXPORT jint JNICALL Java_io_github_gdrfgdrf_cuteverification_web_minecraft_client_compatible_DeviceId_send(
     JNIEnv* env,
     jclass,
     jstring platform_jstring,
